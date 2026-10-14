@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ふたりの予定・メモ管理</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #eef2ff;
+      --user-a: #2563eb;
+      --user-a-bg: #eff6ff;
+      --user-a-border: #bfdbfe;
+      --user-b: #db2777;
+      --user-b-bg: #fdf2f8;
+      --user-b-border: #fbcfe8;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-sub: #64748b;
+      --border: #e2e8f0;
+      --danger: #ef4444;
+      --success: #10b981;
+      --radius: 16px;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    #app {
+      width: 100%;
+      max-width: 480px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 4px 4px;
+    }
+
+    .app-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #0f172a;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+    .user-badge.user-a {
+      background: var(--user-a-bg);
+      color: var(--user-a);
+      border: 1px solid var(--user-a-border);
+    }
+    .user-badge.user-b {
+      background: var(--user-b-bg);
+      color: var(--user-b);
+      border: 1px solid var(--user-b-border);
+    }
+
+    .icon-btn {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    /* Date Navigator */
+    .date-nav-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .date-selector-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-arrow-btn {
+      background: #f1f5f9;
+      border: none;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .nav-arrow-btn:active {
+      background: #e2e8f0;
+    }
+
+    .current-date-display {
+      font-size: 1.15rem;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: -0.01em;
+    }
+    .current-date-display .day-of-week {
+      font-size: 0.95rem;
+      margin-left: 4px;
+    }
+    .day-sat { color: #2563eb; }
+    .day-sun { color: #dc2626; }
+
+    .date-quick-actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      border-top: 1px dashed var(--border);
+      padding-top: 10px;
+    }
+
+    .pill-btn {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-sub);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .pill-btn:active {
+      background: #f1f5f9;
+    }
+    .pill-btn.primary {
+      color: var(--primary);
+      border-color: #c7d2fe;
+      background: var(--primary-light);
+    }
+
+    #hidden-date-picker {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Section Headers */
+    .section-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 0 4px;
+    }
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #334155;
+    }
+
+    /* Schedules Section */
+    .schedule-boxes {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .schedule-box {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      border-left: 5px solid #cbd5e1;
+    }
+    .schedule-box.user-a {
+      border-left-color: var(--user-a);
+    }
+    .schedule-box.user-b {
+      border-left-color: var(--user-b);
+    }
+
+    .schedule-box-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .user-name-tag {
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .user-name-tag.user-a { color: var(--user-a); }
+    .user-name-tag.user-b { color: var(--user-b); }
+
+    .add-btn-small {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--text);
+    }
+    .add-btn-small:active {
+      background: #f1f5f9;
+    }
+
+    .item-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .empty-state {
+      font-size: 0.82rem;
+      color: #94a3b8;
+      text-align: center;
+      padding: 12px 0;
+      font-style: italic;
+    }
+
+    .schedule-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      border-radius: 10px;
+      padding: 9px 12px;
+      gap: 10px;
+    }
+
+    .item-content {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .item-time {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #475569;
+      background: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 5px;
+      white-space: nowrap;
+    }
+    .item-time.all-day {
+      background: #e0e7ff;
+      color: var(--primary);
+    }
+
+    .item-text {
+      font-size: 0.9rem;
+      color: var(--text);
+      word-break: break-word;
+      font-weight: 500;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .action-icon-btn {
+      background: none;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-sub);
+      font-size: 0.95rem;
+    }
+    .action-icon-btn:hover {
+      background: #e2e8f0;
+    }
+    .action-icon-btn.delete:hover {
+      background: #fee2e2;
+      color: var(--danger);
+    }
+
+    /* Returning Button Section */
+    .return-home-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .return-btn-card {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      color: white;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .return-btn-card:active {
+      transform: scale(0.98);
+      box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+    }
+
+    .return-btn-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .return-btn-icon {
+      font-size: 1.6rem;
+      background: rgba(255, 255, 255, 0.2);
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .return-btn-text h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+    .return-btn-text p {
+      font-size: 0.75rem;
+      opacity: 0.85;
+      margin-top: 2px;
+    }
+
+    .send-icon-badge {
+      background: rgba(255, 255, 255, 0.2);
+      font-size: 0.8rem;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      font-weight: 600;
+    }
+
+    /* Memos Section */
+    .memo-section {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .memo-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      background: #fdfbf7;
+      border: 1px solid #fef3c7;
+      border-left: 4px solid #f59e0b;
+      border-radius: 10px;
+      padding: 10px 12px;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .memo-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .memo-text {
+      font-size: 0.88rem;
+      line-height: 1.45;
+      color: #334155;
+      white-space: pre-wrap;
+      word-break: break-word;
+      flex: 1;
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      overflow-y: auto;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 400px;
+      padding: 20px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+      transform: translateY(12px);
+      transition: transform 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-overlay.active .modal-card {
+      transform: translateY(0);
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-sub);
+    }
+    .form-input, .form-textarea, .form-select {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      outline: none;
+      background: #f8fafc;
+    }
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      border-color: var(--primary);
+      background: #ffffff;
+    }
+    .form-textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    /* Custom Time Selector */
+    .time-selector-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .time-select {
+      flex: 1;
+      padding: 10px 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      color: var(--text);
+      outline: none;
+    }
+    .time-select:focus {
+      border-color: var(--primary);
+      background: #ffffff;
+    }
+    .time-separator {
+      font-weight: 700;
+      color: var(--text-sub);
+    }
+
+    .quick-time-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .time-chip {
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #475569;
+      cursor: pointer;
+    }
+    .time-chip:active {
+      background: #e2e8f0;
+    }
+    .time-chip.clear {
+      background: #fee2e2;
+      color: #b91c1c;
+      border-color: #fecaca;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .btn {
+      padding: 11px 20px;
+      border-radius: 12px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn.secondary {
+      background: #f1f5f9;
+      color: var(--text-sub);
+    }
+    .btn.secondary:active {
+      background: #e2e8f0;
+    }
+    .btn.primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.25);
+    }
+    .btn.primary:active {
+      transform: scale(0.97);
+    }
+
+    /* Initial user choice cards */
+    .user-choice-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .user-choice-btn {
+      background: #f8fafc;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .user-choice-btn:active {
+      transform: scale(0.96);
+    }
+    .user-choice-btn.user-a:hover, .user-choice-btn.user-a.active {
+      border-color: var(--user-a);
+      background: var(--user-a-bg);
+    }
+    .user-choice-btn.user-b:hover, .user-choice-btn.user-b.active {
+      border-color: var(--user-b);
+      background: var(--user-b-bg);
+    }
+    .user-choice-icon {
+      font-size: 2rem;
+    }
+    .user-choice-name {
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1e293b;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 9999px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 200;
+      white-space: nowrap;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="app">
+    <!-- Header -->
+    <header>
+      <div class="app-title">
+        <span>🏠</span>
+        <span>ふたりの予定ノート</span>
+      </div>
+      <div class="header-actions">
+        <span id="current-user-tag" class="user-badge user-a">👦 ゆーくん端末</span>
+        <button id="btn-open-settings" class="icon-btn" title="設定">⚙️</button>
+      </div>
+    </header>
+
+    <!-- Date Navigator -->
+    <section class="date-nav-card">
+      <div class="date-selector-row">
+        <button id="btn-prev-day" class="nav-arrow-btn" title="前の日">◀</button>
+        <div class="current-date-display" id="date-label">
+          --月--日<span class="day-of-week">(--)</span>
+        </div>
+        <button id="btn-next-day" class="nav-arrow-btn" title="次の日">▶</button>
+      </div>
+      <div class="date-quick-actions">
+        <button id="btn-today" class="pill-btn primary">今日へ戻る</button>
+        <button id="btn-calendar" class="pill-btn">📅 カレンダー選択</button>
+        <input type="date" id="hidden-date-picker">
+      </div>
+    </section>
+
+    <!-- 1. Schedules Section (Order: Top) -->
+    <section>
+      <div class="section-title-row">
+        <div class="section-title">
+          <span>📅</span>
+          <span id="schedules-heading-date">10月13日(月) の予定</span>
+        </div>
+      </div>
+
+      <div class="schedule-boxes">
+        <!-- User A Box -->
+        <div class="schedule-box user-a">
+          <div class="schedule-box-header">
+            <div class="user-name-tag user-a">
+              <span>👦</span>
+              <span id="label-user-a">ゆーくん</span> の予定
+            </div>
+            <button class="add-btn-small" onclick="openScheduleModal('A')">＋ 追加</button>
+          </div>
+          <div class="item-list" id="list-schedules-a"></div>
+        </div>
+
+        <!-- User B Box -->
+        <div class="schedule-box user-b">
+          <div class="schedule-box-header">
+            <div class="user-name-tag user-b">
+              <span>👧</span>
+              <span id="label-user-b">ちーちゃん</span> の予定
+            </div>
+            <button class="add-btn-small" onclick="openScheduleModal('B')">＋ 追加</button>
+          </div>
+          <div class="item-list" id="list-schedules-b"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Return Home Section (Order: Middle) -->
+    <section class="return-home-section">
+      <div class="section-title-row">
+        <div class="section-title">
+          <span>🏃‍♂️</span>
+          <span>今から帰るよ</span>
+        </div>
+      </div>
+
+      <button id="btn-send-return" class="return-btn-card">
+        <div class="return-btn-content">
+          <div class="return-btn-icon">🏠</div>
+          <div class="return-btn-text">
+            <h3 id="return-button-label">今から帰るよ！</h3>
+            <p id="return-target-label">ちーちゃんにLINE通知を送る</p>
+          </div>
+        </div>
+        <div class="send-icon-badge">送信 ✉️</div>
+      </button>
+    </section>
+
+    <!-- 3. Any Memo Section (Order: Bottom) -->
+    <section class="memo-section">
+      <div class="section-title-row">
+        <div class="section-title">
+          <span>📌</span>
+          <span>なんでもメモ</span>
+        </div>
+        <button class="add-btn-small" onclick="openMemoModal()">＋ 追加</button>
+      </div>
+      <div class="item-list" id="list-memos" style="margin-top: 10px;"></div>
+    </section>
+  </div>
+
+  <!-- Modal: Initial / Switch User Selection -->
+  <div class="modal-overlay" id="modal-user-select">
+    <div class="modal-card">
+      <div class="modal-title">このスマホで利用する人を選択</div>
+      <p style="font-size:0.85rem; color: var(--text-sub); line-height: 1.4;">
+        選択した設定はこのブラウザに保存され、予定追加や「今から帰るよ」の送信元になります。
+      </p>
+      <div class="user-choice-grid">
+        <button class="user-choice-btn user-a" onclick="selectDeviceUser('A')">
+          <div class="user-choice-icon">👦</div>
+          <div class="user-choice-name" id="choice-name-a">ゆーくん</div>
+        </button>
+        <button class="user-choice-btn user-b" onclick="selectDeviceUser('B')">
+          <div class="user-choice-icon">👧</div>
+          <div class="user-choice-name" id="choice-name-b">ちーちゃん</div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Schedule Add / Edit -->
+  <div class="modal-overlay" id="modal-schedule">
+    <div class="modal-card">
+      <div class="modal-title" id="schedule-modal-title">予定の追加</div>
+      <input type="hidden" id="schedule-id">
+      <input type="hidden" id="schedule-user">
+
+      <div class="form-group">
+        <label class="form-label">対象</label>
+        <div id="schedule-target-user-display" style="font-weight: 700; font-size: 0.95rem; padding: 2px 0;"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">時間設定（指定なしで「終日」）</label>
+        <div class="time-selector-row">
+          <select id="select-time-hour" class="time-select">
+            <option value="">指定なし (終日)</option>
+          </select>
+          <span class="time-separator">：</span>
+          <select id="select-time-minute" class="time-select">
+            <option value="00">00 分</option>
+            <option value="15">15 分</option>
+            <option value="30">30 分</option>
+            <option value="45">45 分</option>
+            <option value="05">05 分</option>
+            <option value="10">10 分</option>
+            <option value="20">20 分</option>
+            <option value="25">25 分</option>
+            <option value="35">35 分</option>
+            <option value="40">40 分</option>
+            <option value="50">50 分</option>
+            <option value="55">55 分</option>
+          </select>
+        </div>
+        <div class="quick-time-chips">
+          <button type="button" class="time-chip" onclick="setQuickTime('09','00')">朝 9:00</button>
+          <button type="button" class="time-chip" onclick="setQuickTime('12','00')">昼 12:00</button>
+          <button type="button" class="time-chip" onclick="setQuickTime('18','00')">夕 18:00</button>
+          <button type="button" class="time-chip" onclick="setQuickTime('19','30')">夜 19:30</button>
+          <button type="button" class="time-chip" onclick="setQuickTime('21','00')">夜 21:00</button>
+          <button type="button" class="time-chip clear" onclick="setQuickTime('','')">終日に戻す</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="schedule-title">予定の内容</label>
+        <input type="text" id="schedule-title" class="form-input" placeholder="例: 同僚と夕食、ジム、テレワーク" required>
+      </div>
+
+      <div class="modal-buttons">
+        <button type="button" class="btn secondary" onclick="closeModal('modal-schedule')">キャンセル</button>
+        <button type="button" class="btn primary" onclick="saveSchedule()">
+          <span>✓</span>
+          <span>保存する</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Memo Add / Edit -->
+  <div class="modal-overlay" id="modal-memo">
+    <div class="modal-card">
+      <div class="modal-title" id="memo-modal-title">共有メモの追加</div>
+      <input type="hidden" id="memo-id">
+
+      <div class="form-group">
+        <label class="form-label" for="memo-content">メモ内容（日付に関係なく残ります）</label>
+        <textarea id="memo-content" class="form-textarea" placeholder="例: トイレットペーパー買う、今月の家賃振込（25日）"></textarea>
+      </div>
+
+      <div class="modal-buttons">
+        <button type="button" class="btn secondary" onclick="closeModal('modal-memo')">キャンセル</button>
+        <button type="button" class="btn primary" onclick="saveMemo()">
+          <span>✓</span>
+          <span>保存する</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings -->
+  <div class="modal-overlay" id="modal-settings">
+    <div class="modal-card">
+      <div class="modal-title">⚙️ アプリ設定</div>
+
+      <div class="form-group">
+        <label class="form-label">このスマホの利用者</label>
+        <div class="user-choice-grid" style="margin-top: 4px;">
+          <button class="user-choice-btn user-a" id="setting-choice-a" onclick="selectDeviceUser('A', false)">
+            <div class="user-choice-icon">👦</div>
+            <div class="user-choice-name">ゆーくん</div>
+          </button>
+          <button class="user-choice-btn user-b" id="setting-choice-b" onclick="selectDeviceUser('B', false)">
+            <div class="user-choice-icon">👧</div>
+            <div class="user-choice-name">ちーちゃん</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 8px;">
+        <label class="form-label" for="input-name-a">Aの名前（ニックネーム）</label>
+        <input type="text" id="input-name-a" class="form-input" value="ゆーくん">
+      </div>
+
+      <div class="form-group" style="margin-top: 8px;">
+        <label class="form-label" for="input-name-b">Bの名前（ニックネーム）</label>
+        <input type="text" id="input-name-b" class="form-input" value="ちーちゃん">
+      </div>
+
+      <div class="modal-buttons">
+        <button type="button" class="btn secondary" onclick="closeModal('modal-settings')">閉じる</button>
+        <button type="button" class="btn primary" onclick="saveSettings()">設定を更新</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast-msg">
+    <span>✉️</span>
+    <span id="toast-text">メッセージ</span>
+  </div>
+
+  <script>
+    // --- Data Storage Keys ---
+    const STORAGE_KEY_SCHEDULES = "pair_planner_schedules_v1";
+    const STORAGE_KEY_MEMOS = "pair_planner_memos_v1";
+    const STORAGE_KEY_CONFIG = "pair_planner_config_v1";
+
+    // --- State ---
+    let currentDate = new Date();
+    let config = {
+      deviceUser: "A", // Default to A safely
+      nameA: "ゆーくん",
+      nameB: "ちーちゃん"
+    };
+    let schedules = [];
+    let memos = [];
+
+    const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
+
+    // Safe LocalStorage wrapper (protects against content:// SecurityError)
+    const storage = {
+      get: (key) => {
+        try {
+          return localStorage.getItem(key);
+        } catch (e) {
+          console.warn("Storage get failed:", e);
+          return null;
+        }
+      },
+      set: (key, val) => {
+        try {
+          localStorage.setItem(key, val);
+        } catch (e) {
+          console.warn("Storage set failed:", e);
+        }
+      }
+    };
+
+    // --- Init ---
+    function init() {
+      populateHourOptions();
+      loadStorageData();
+
+      // Show user select only if explicitly empty or first launch
+      const hasStoredUser = storage.get(STORAGE_KEY_CONFIG);
+      if (!hasStoredUser) {
+        openModal("modal-user-select");
+      }
+      updateUserUI();
+
+      renderDateView();
+      renderSchedules();
+      renderMemos();
+
+      setupEventListeners();
+    }
+
+    function populateHourOptions() {
+      const selectHour = document.getElementById("select-time-hour");
+      if (selectHour.options.length > 1) return;
+      for (let i = 0; i < 24; i++) {
+        const val = String(i).padStart(2, "0");
+        const opt = document.createElement("option");
+        opt.value = val;
+        opt.textContent = `${val} 時`;
+        selectHour.appendChild(opt);
+      }
+    }
+
+    function setQuickTime(hour, minute) {
+      document.getElementById("select-time-hour").value = hour;
+      if (hour) {
+        document.getElementById("select-time-minute").value = minute || "00";
+      }
+    }
+
+    // --- Storage Handling ---
+    function loadStorageData() {
+      const storedConfig = storage.get(STORAGE_KEY_CONFIG);
+      if (storedConfig) {
+        try { config = Object.assign(config, JSON.parse(storedConfig)); } catch (e) {}
+      }
+
+      const storedSchedules = storage.get(STORAGE_KEY_SCHEDULES);
+      if (storedSchedules) {
+        try { schedules = JSON.parse(storedSchedules); } catch (e) {}
+      } else {
+        const todayStr = formatDateISO(new Date());
+        schedules = [
+          { id: "s1", date: todayStr, user: "A", time: "19:30", title: "同僚と夕食" },
+          { id: "s2", date: todayStr, user: "A", time: "22:00", title: "帰宅予定" },
+          { id: "s3", date: todayStr, user: "B", time: "", title: "終日テレワーク" },
+          { id: "s4", date: todayStr, user: "B", time: "20:00", title: "ヨガレッスン" }
+        ];
+        saveSchedulesToStorage();
+      }
+
+      const storedMemos = storage.get(STORAGE_KEY_MEMOS);
+      if (storedMemos) {
+        try { memos = JSON.parse(storedMemos); } catch (e) {}
+      } else {
+        memos = [
+          { id: "m1", content: "トイレットペーパーと洗剤を買う" },
+          { id: "m2", content: "今月の家賃振込（25日まで）" }
+        ];
+        saveMemosToStorage();
+      }
+    }
+
+    function saveSchedulesToStorage() {
+      storage.set(STORAGE_KEY_SCHEDULES, JSON.stringify(schedules));
+    }
+    function saveMemosToStorage() {
+      storage.set(STORAGE_KEY_MEMOS, JSON.stringify(memos));
+    }
+    function saveConfigToStorage() {
+      storage.set(STORAGE_KEY_CONFIG, JSON.stringify(config));
+    }
+
+    // --- Event Listeners ---
+    function setupEventListeners() {
+      document.getElementById("btn-prev-day").addEventListener("click", () => {
+        currentDate.setDate(currentDate.getDate() - 1);
+        renderDateView();
+        renderSchedules();
+      });
+      document.getElementById("btn-next-day").addEventListener("click", () => {
+        currentDate.setDate(currentDate.getDate() + 1);
+        renderDateView();
+        renderSchedules();
+      });
+
+      document.getElementById("btn-today").addEventListener("click", () => {
+        currentDate = new Date();
+        renderDateView();
+        renderSchedules();
+        showToast("今日の予定を表示しました");
+      });
+
+      const hiddenPicker = document.getElementById("hidden-date-picker");
+      document.getElementById("btn-calendar").addEventListener("click", () => {
+        hiddenPicker.value = formatDateISO(currentDate);
+        if (typeof hiddenPicker.showPicker === 'function') {
+          hiddenPicker.showPicker();
+        } else {
+          hiddenPicker.click();
+        }
+      });
+      hiddenPicker.addEventListener("change", (e) => {
+        if (e.target.value) {
+          const parts = e.target.value.split("-");
+          currentDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+          renderDateView();
+          renderSchedules();
+        }
+      });
+
+      document.getElementById("btn-open-settings").addEventListener("click", () => {
+        document.getElementById("input-name-a").value = config.nameA;
+        document.getElementById("input-name-b").value = config.nameB;
+        updateSettingsActiveState();
+        openModal("modal-settings");
+      });
+
+      document.getElementById("btn-send-return").addEventListener("click", () => {
+        const sender = config.deviceUser === "B" ? config.nameB : config.nameA;
+        const receiver = config.deviceUser === "B" ? config.nameA : config.nameB;
+        showToast(`📲「${sender}が今から帰るよ！」を${receiver}にLINE送信しました`);
+      });
+    }
+
+    function formatDateISO(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function renderDateView() {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+      const day = currentDate.getDate();
+      const dayOfWeekIdx = currentDate.getDay();
+      const dayName = dayNames[dayOfWeekIdx];
+
+      let dayClass = "";
+      if (dayOfWeekIdx === 0) dayClass = "day-sun";
+      if (dayOfWeekIdx === 6) dayClass = "day-sat";
+
+      const dateLabel = document.getElementById("date-label");
+      dateLabel.innerHTML = `${year}年 ${month}月${day}日 <span class="day-of-week ${dayClass}">(${dayName})</span>`;
+
+      const schedulesHeading = document.getElementById("schedules-heading-date");
+      schedulesHeading.innerHTML = `${month}月${day}日(${dayName}) の予定`;
+    }
+
+    function updateUserUI() {
+      const tag = document.getElementById("current-user-tag");
+      const isUserA = config.deviceUser === "A";
+      const myName = isUserA ? config.nameA : config.nameB;
+      const partnerName = isUserA ? config.nameB : config.nameA;
+
+      tag.textContent = `${isUserA ? '👦' : '👧'} ${myName}端末`;
+      tag.className = `user-badge ${isUserA ? 'user-a' : 'user-b'}`;
+
+      document.getElementById("label-user-a").textContent = config.nameA;
+      document.getElementById("label-user-b").textContent = config.nameB;
+      document.getElementById("choice-name-a").textContent = config.nameA;
+      document.getElementById("choice-name-b").textContent = config.nameB;
+
+      document.getElementById("return-button-label").textContent = `🏠 ${myName}が今から帰るよ！`;
+      document.getElementById("return-target-label").textContent = `${partnerName}にLINE通知を送る`;
+    }
+
+    function selectDeviceUser(user, close = true) {
+      config.deviceUser = user;
+      saveConfigToStorage();
+      updateUserUI();
+      if (close) {
+        closeModal("modal-user-select");
+        showToast(`${user === 'A' ? config.nameA : config.nameB}として設定しました`);
+      } else {
+        updateSettingsActiveState();
+      }
+    }
+
+    function updateSettingsActiveState() {
+      const btnA = document.getElementById("setting-choice-a");
+      const btnB = document.getElementById("setting-choice-b");
+      btnA.classList.toggle("active", config.deviceUser === "A");
+      btnB.classList.toggle("active", config.deviceUser === "B");
+    }
+
+    function saveSettings() {
+      const nameA = document.getElementById("input-name-a").value.trim();
+      const nameB = document.getElementById("input-name-b").value.trim();
+      if (nameA) config.nameA = nameA;
+      if (nameB) config.nameB = nameB;
+      saveConfigToStorage();
+      updateUserUI();
+      renderSchedules();
+      closeModal("modal-settings");
+      showToast("設定を保存しました");
+    }
+
+    // --- Schedules Rendering & CRUD ---
+    function renderSchedules() {
+      const dateStr = formatDateISO(currentDate);
+      const filtered = schedules.filter(s => s.date === dateStr);
+
+      const listA = document.getElementById("list-schedules-a");
+      const listB = document.getElementById("list-schedules-b");
+
+      const itemsA = filtered.filter(s => s.user === "A").sort(sortScheduleTimes);
+      const itemsB = filtered.filter(s => s.user === "B").sort(sortScheduleTimes);
+
+      listA.innerHTML = renderScheduleListHtml(itemsA);
+      listB.innerHTML = renderScheduleListHtml(itemsB);
+    }
+
+    function sortScheduleTimes(a, b) {
+      if (!a.time && !b.time) return 0;
+      if (!a.time) return -1;
+      if (!b.time) return 1;
+      return a.time.localeCompare(b.time);
+    }
+
+    function renderScheduleListHtml(items) {
+      if (items.length === 0) {
+        return `<div class="empty-state">予定はありません</div>`;
+      }
+      return items.map(item => `
+        <div class="schedule-item">
+          <div class="item-content">
+            <span class="item-time ${item.time ? '' : 'all-day'}">${item.time ? item.time : '終日'}</span>
+            <span class="item-text">${escapeHtml(item.title)}</span>
+          </div>
+          <div class="item-actions">
+            <button class="action-icon-btn" title="編集" onclick="editSchedule('${item.id}')">✏️</button>
+            <button class="action-icon-btn delete" title="削除" onclick="deleteSchedule('${item.id}')">🗑️</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function openScheduleModal(user) {
+      document.getElementById("schedule-modal-title").textContent = "予定の追加";
+      document.getElementById("schedule-id").value = "";
+      document.getElementById("schedule-user").value = user;
+      document.getElementById("select-time-hour").value = "";
+      document.getElementById("select-time-minute").value = "00";
+      document.getElementById("schedule-title").value = "";
+
+      const name = user === "A" ? config.nameA : config.nameB;
+      const icon = user === "A" ? "👦" : "👧";
+      document.getElementById("schedule-target-user-display").innerHTML = `${icon} ${name} の予定`;
+
+      openModal("modal-schedule");
+    }
+
+    function editSchedule(id) {
+      const item = schedules.find(s => s.id === id);
+      if (!item) return;
+
+      document.getElementById("schedule-modal-title").textContent = "予定の編集";
+      document.getElementById("schedule-id").value = item.id;
+      document.getElementById("schedule-user").value = item.user;
+
+      if (item.time && item.time.includes(":")) {
+        const parts = item.time.split(":");
+        document.getElementById("select-time-hour").value = parts[0];
+        document.getElementById("select-time-minute").value = parts[1];
+      } else {
+        document.getElementById("select-time-hour").value = "";
+        document.getElementById("select-time-minute").value = "00";
+      }
+
+      document.getElementById("schedule-title").value = item.title;
+
+      const name = item.user === "A" ? config.nameA : config.nameB;
+      const icon = item.user === "A" ? "👦" : "👧";
+      document.getElementById("schedule-target-user-display").innerHTML = `${icon} ${name} の予定`;
+
+      openModal("modal-schedule");
+    }
+
+    function saveSchedule() {
+      try {
+        const id = document.getElementById("schedule-id").value;
+        const user = document.getElementById("schedule-user").value;
+        const hour = document.getElementById("select-time-hour").value;
+        const minute = document.getElementById("select-time-minute").value;
+        const time = hour ? `${hour}:${minute}` : "";
+        const title = document.getElementById("schedule-title").value.trim();
+        const dateStr = formatDateISO(currentDate);
+
+        if (!title) {
+          alert("予定の内容を入力してください");
+          return;
+        }
+
+        if (id) {
+          const idx = schedules.findIndex(s => s.id === id);
+          if (idx !== -1) {
+            schedules[idx].time = time;
+            schedules[idx].title = title;
+          }
+        } else {
+          schedules.push({
+            id: "s_" + Date.now(),
+            date: dateStr,
+            user: user,
+            time: time,
+            title: title
+          });
+        }
+
+        saveSchedulesToStorage();
+        renderSchedules();
+        closeModal("modal-schedule");
+        showToast("予定を保存しました");
+      } catch (err) {
+        console.error("Save schedule error:", err);
+        alert("保存処理中にエラーが発生しました: " + err.message);
+      }
+    }
+
+    function deleteSchedule(id) {
+      if (!confirm("この予定を削除しますか？")) return;
+      schedules = schedules.filter(s => s.id !== id);
+      saveSchedulesToStorage();
+      renderSchedules();
+      showToast("予定を削除しました");
+    }
+
+    // --- Memos Rendering & CRUD ---
+    function renderMemos() {
+      const list = document.getElementById("list-memos");
+      if (memos.length === 0) {
+        list.innerHTML = `<div class="empty-state">メモはありません</div>`;
+        return;
+      }
+      list.innerHTML = memos.map(m => `
+        <div class="memo-item">
+          <div class="memo-text">${escapeHtml(m.content)}</div>
+          <div class="item-actions">
+            <button class="action-icon-btn" title="編集" onclick="editMemo('${m.id}')">✏️</button>
+            <button class="action-icon-btn delete" title="削除" onclick="deleteMemo('${m.id}')">🗑️</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function openMemoModal() {
+      document.getElementById("memo-modal-title").textContent = "共有メモの追加";
+      document.getElementById("memo-id").value = "";
+      document.getElementById("memo-content").value = "";
+      openModal("modal-memo");
+    }
+
+    function editMemo(id) {
+      const memo = memos.find(m => m.id === id);
+      if (!memo) return;
+      document.getElementById("memo-modal-title").textContent = "共有メモの編集";
+      document.getElementById("memo-id").value = memo.id;
+      document.getElementById("memo-content").value = memo.content;
+      openModal("modal-memo");
+    }
+
+    function saveMemo() {
+      try {
+        const id = document.getElementById("memo-id").value;
+        const content = document.getElementById("memo-content").value.trim();
+
+        if (!content) {
+          alert("メモ内容を入力してください");
+          return;
+        }
+
+        if (id) {
+          const idx = memos.findIndex(m => m.id === id);
+          if (idx !== -1) {
+            memos[idx].content = content;
+          }
+        } else {
+          memos.push({
+            id: "m_" + Date.now(),
+            content: content
+          });
+        }
+
+        saveMemosToStorage();
+        renderMemos();
+        closeModal("modal-memo");
+        showToast("メモを保存しました");
+      } catch (err) {
+        console.error("Save memo error:", err);
+        alert("保存処理中にエラーが発生しました: " + err.message);
+      }
+    }
+
+    function deleteMemo(id) {
+      if (!confirm("このメモを削除しますか？")) return;
+      memos = memos.filter(m => m.id !== id);
+      saveMemosToStorage();
+      renderMemos();
+      showToast("メモを削除しました");
+    }
+
+    // --- Modal Controls ---
+    function openModal(id) {
+      document.getElementById(id).classList.add("active");
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("active");
+    }
+
+    // --- Toast Notification ---
+    let toastTimer = null;
+    function showToast(text) {
+      const toast = document.getElementById("toast-msg");
+      document.getElementById("toast-text").textContent = text;
+      toast.classList.add("show");
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2400);
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
+
+    window.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>
