@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ふたりの予定・メモ管理</title>
+
+  <!-- Firebase SDK (Compat CDN) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
   <style>
     :root {
       --primary: #4f46e5;
@@ -72,6 +77,27 @@
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+
+    .sync-status {
+      font-size: 0.7rem;
+      color: var(--success);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .sync-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+      100% { opacity: 1; transform: scale(1); }
     }
 
     .user-badge {
@@ -677,6 +703,10 @@
         <span>ふたりの予定ノート</span>
       </div>
       <div class="header-actions">
+        <div class="sync-status" title="リアルタイム同期中">
+          <div class="sync-dot"></div>
+          <span>同期中</span>
+        </div>
         <span id="current-user-tag" class="user-badge user-a">👦 ゆーくん端末</span>
         <button id="btn-open-settings" class="icon-btn" title="設定">⚙️</button>
       </div>
@@ -911,59 +941,89 @@
   </div>
 
   <script>
-    // --- Data Storage Keys ---
-    const STORAGE_KEY_SCHEDULES = "pair_planner_schedules_v1";
-    const STORAGE_KEY_MEMOS = "pair_planner_memos_v1";
-    const STORAGE_KEY_CONFIG = "pair_planner_config_v1";
+    // --- Firebase Initialization ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyDgV6LZANrXZKCgZXpLY2nUf7JSLe_te0U",
+      authDomain: "futarinoapps.firebaseapp.com",
+      projectId: "futarinoapps",
+      storageBucket: "futarinoapps.firebasestorage.app",
+      messagingSenderId: "742999797831",
+      appId: "1:742999797831:web:38f92fd0043c9ad519c162"
+    };
+
+    let db;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      // Enable offline persistence for instantaneous local updates
+      db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+        console.warn("Offline persistence not enabled:", err.code);
+      });
+    } catch (e) {
+      console.error("Firebase init failed:", e);
+    }
 
     // --- State ---
+    const STORAGE_KEY_CONFIG = "pair_planner_config_v1";
+
     let currentDate = new Date();
     let config = {
-      deviceUser: "A", // Default to A safely
+      deviceUser: "A",
       nameA: "ゆーくん",
       nameB: "ちーちゃん"
     };
+
     let schedules = [];
     let memos = [];
 
     const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
 
-    // Safe LocalStorage wrapper (protects against content:// SecurityError)
-    const storage = {
-      get: (key) => {
-        try {
-          return localStorage.getItem(key);
-        } catch (e) {
-          console.warn("Storage get failed:", e);
-          return null;
-        }
-      },
-      set: (key, val) => {
-        try {
-          localStorage.setItem(key, val);
-        } catch (e) {
-          console.warn("Storage set failed:", e);
-        }
-      }
-    };
-
     // --- Init ---
     function init() {
       populateHourOptions();
-      loadStorageData();
+      loadLocalConfig();
 
-      // Show user select only if explicitly empty or first launch
-      const hasStoredUser = storage.get(STORAGE_KEY_CONFIG);
-      if (!hasStoredUser) {
+      const hasStoredConfig = localStorage.getItem(STORAGE_KEY_CONFIG);
+      if (!hasStoredConfig) {
         openModal("modal-user-select");
       }
       updateUserUI();
 
       renderDateView();
-      renderSchedules();
-      renderMemos();
-
       setupEventListeners();
+
+      // Start Realtime Firestore Listeners
+      initRealtimeFirestore();
+    }
+
+    // --- Realtime Firestore Sync ---
+    function initRealtimeFirestore() {
+      if (!db) {
+        showToast("⚠️ データベース接続に失敗しました");
+        return;
+      }
+
+      // Listen for Schedules in Realtime
+      db.collection("schedules").onSnapshot(snapshot => {
+        schedules = [];
+        snapshot.forEach(doc => {
+          schedules.push({ id: doc.id, ...doc.data() });
+        });
+        renderSchedules();
+      }, err => {
+        console.error("Schedules sync error:", err);
+      });
+
+      // Listen for Memos in Realtime
+      db.collection("memos").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+        memos = [];
+        snapshot.forEach(doc => {
+          memos.push({ id: doc.id, ...doc.data() });
+        });
+        renderMemos();
+      }, err => {
+        console.error("Memos sync error:", err);
+      });
     }
 
     function populateHourOptions() {
@@ -985,47 +1045,19 @@
       }
     }
 
-    // --- Storage Handling ---
-    function loadStorageData() {
-      const storedConfig = storage.get(STORAGE_KEY_CONFIG);
-      if (storedConfig) {
-        try { config = Object.assign(config, JSON.parse(storedConfig)); } catch (e) {}
-      }
-
-      const storedSchedules = storage.get(STORAGE_KEY_SCHEDULES);
-      if (storedSchedules) {
-        try { schedules = JSON.parse(storedSchedules); } catch (e) {}
-      } else {
-        const todayStr = formatDateISO(new Date());
-        schedules = [
-          { id: "s1", date: todayStr, user: "A", time: "19:30", title: "同僚と夕食" },
-          { id: "s2", date: todayStr, user: "A", time: "22:00", title: "帰宅予定" },
-          { id: "s3", date: todayStr, user: "B", time: "", title: "終日テレワーク" },
-          { id: "s4", date: todayStr, user: "B", time: "20:00", title: "ヨガレッスン" }
-        ];
-        saveSchedulesToStorage();
-      }
-
-      const storedMemos = storage.get(STORAGE_KEY_MEMOS);
-      if (storedMemos) {
-        try { memos = JSON.parse(storedMemos); } catch (e) {}
-      } else {
-        memos = [
-          { id: "m1", content: "トイレットペーパーと洗剤を買う" },
-          { id: "m2", content: "今月の家賃振込（25日まで）" }
-        ];
-        saveMemosToStorage();
-      }
+    function loadLocalConfig() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY_CONFIG);
+        if (stored) {
+          config = Object.assign(config, JSON.parse(stored));
+        }
+      } catch (e) {}
     }
 
-    function saveSchedulesToStorage() {
-      storage.set(STORAGE_KEY_SCHEDULES, JSON.stringify(schedules));
-    }
-    function saveMemosToStorage() {
-      storage.set(STORAGE_KEY_MEMOS, JSON.stringify(memos));
-    }
-    function saveConfigToStorage() {
-      storage.set(STORAGE_KEY_CONFIG, JSON.stringify(config));
+    function saveLocalConfig() {
+      try {
+        localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(config));
+      } catch (e) {}
     }
 
     // --- Event Listeners ---
@@ -1125,7 +1157,7 @@
 
     function selectDeviceUser(user, close = true) {
       config.deviceUser = user;
-      saveConfigToStorage();
+      saveLocalConfig();
       updateUserUI();
       if (close) {
         closeModal("modal-user-select");
@@ -1147,7 +1179,7 @@
       const nameB = document.getElementById("input-name-b").value.trim();
       if (nameA) config.nameA = nameA;
       if (nameB) config.nameB = nameB;
-      saveConfigToStorage();
+      saveLocalConfig();
       updateUserUI();
       renderSchedules();
       closeModal("modal-settings");
@@ -1235,53 +1267,52 @@
       openModal("modal-schedule");
     }
 
-    function saveSchedule() {
+    async function saveSchedule() {
+      const id = document.getElementById("schedule-id").value;
+      const user = document.getElementById("schedule-user").value;
+      const hour = document.getElementById("select-time-hour").value;
+      const minute = document.getElementById("select-time-minute").value;
+      const time = hour ? `${hour}:${minute}` : "";
+      const title = document.getElementById("schedule-title").value.trim();
+      const dateStr = formatDateISO(currentDate);
+
+      if (!title) {
+        alert("予定の内容を入力してください");
+        return;
+      }
+
+      const scheduleData = {
+        date: dateStr,
+        user: user,
+        time: time,
+        title: title,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
       try {
-        const id = document.getElementById("schedule-id").value;
-        const user = document.getElementById("schedule-user").value;
-        const hour = document.getElementById("select-time-hour").value;
-        const minute = document.getElementById("select-time-minute").value;
-        const time = hour ? `${hour}:${minute}` : "";
-        const title = document.getElementById("schedule-title").value.trim();
-        const dateStr = formatDateISO(currentDate);
-
-        if (!title) {
-          alert("予定の内容を入力してください");
-          return;
-        }
-
         if (id) {
-          const idx = schedules.findIndex(s => s.id === id);
-          if (idx !== -1) {
-            schedules[idx].time = time;
-            schedules[idx].title = title;
-          }
+          await db.collection("schedules").doc(id).update(scheduleData);
         } else {
-          schedules.push({
-            id: "s_" + Date.now(),
-            date: dateStr,
-            user: user,
-            time: time,
-            title: title
-          });
+          scheduleData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          await db.collection("schedules").add(scheduleData);
         }
-
-        saveSchedulesToStorage();
-        renderSchedules();
         closeModal("modal-schedule");
         showToast("予定を保存しました");
       } catch (err) {
-        console.error("Save schedule error:", err);
-        alert("保存処理中にエラーが発生しました: " + err.message);
+        console.error("Firestore save error:", err);
+        alert("保存中にエラーが発生しました: " + err.message);
       }
     }
 
-    function deleteSchedule(id) {
+    async function deleteSchedule(id) {
       if (!confirm("この予定を削除しますか？")) return;
-      schedules = schedules.filter(s => s.id !== id);
-      saveSchedulesToStorage();
-      renderSchedules();
-      showToast("予定を削除しました");
+      try {
+        await db.collection("schedules").doc(id).delete();
+        showToast("予定を削除しました");
+      } catch (err) {
+        console.error("Firestore delete error:", err);
+        alert("削除中にエラーが発生しました: " + err.message);
+      }
     }
 
     // --- Memos Rendering & CRUD ---
@@ -1318,44 +1349,44 @@
       openModal("modal-memo");
     }
 
-    function saveMemo() {
+    async function saveMemo() {
+      const id = document.getElementById("memo-id").value;
+      const content = document.getElementById("memo-content").value.trim();
+
+      if (!content) {
+        alert("メモ内容を入力してください");
+        return;
+      }
+
+      const memoData = {
+        content: content,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
       try {
-        const id = document.getElementById("memo-id").value;
-        const content = document.getElementById("memo-content").value.trim();
-
-        if (!content) {
-          alert("メモ内容を入力してください");
-          return;
-        }
-
         if (id) {
-          const idx = memos.findIndex(m => m.id === id);
-          if (idx !== -1) {
-            memos[idx].content = content;
-          }
+          await db.collection("memos").doc(id).update(memoData);
         } else {
-          memos.push({
-            id: "m_" + Date.now(),
-            content: content
-          });
+          memoData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          await db.collection("memos").add(memoData);
         }
-
-        saveMemosToStorage();
-        renderMemos();
         closeModal("modal-memo");
         showToast("メモを保存しました");
       } catch (err) {
-        console.error("Save memo error:", err);
-        alert("保存処理中にエラーが発生しました: " + err.message);
+        console.error("Firestore memo save error:", err);
+        alert("保存中にエラーが発生しました: " + err.message);
       }
     }
 
-    function deleteMemo(id) {
+    async function deleteMemo(id) {
       if (!confirm("このメモを削除しますか？")) return;
-      memos = memos.filter(m => m.id !== id);
-      saveMemosToStorage();
-      renderMemos();
-      showToast("メモを削除しました");
+      try {
+        await db.collection("memos").doc(id).delete();
+        showToast("メモを削除しました");
+      } catch (err) {
+        console.error("Firestore memo delete error:", err);
+        alert("削除中にエラーが発生しました: " + err.message);
+      }
     }
 
     // --- Modal Controls ---
