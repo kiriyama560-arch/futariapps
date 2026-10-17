@@ -69,7 +69,7 @@
     dialog.style.cssText='margin:auto;border:1px solid #e2e8f0;border-radius:18px;padding:22px;width:min(94vw,440px);max-height:90vh;color:#1e293b';
     dialog.innerHTML='<form method="dialog"><h2 style="font-size:19px;margin-bottom:12px">通知設定</h2><p style="font-size:13px;margin-bottom:14px">2人のスマホにntfyを入れ、この端末の通知先を登録します。登録コードや通知先は他の人に共有しないでください。</p><label>通知サーバーURL<input id="notify-endpoint" class="form-input" type="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec"></label><label>この端末の登録コード<input id="notify-token" class="form-input" type="password" autocomplete="off"></label><button type="button" id="notify-connect" class="btn primary" style="margin:14px 0">接続して登録</button><p id="notify-status" role="status" style="font-size:13px;white-space:pre-wrap"></p><label id="notify-topic-label" hidden>ntfyで登録する通知先<input id="notify-topic" class="form-input" readonly></label><p style="font-size:12px;margin:12px 0">メモ通知は数分遅れる場合があります。無料の通知先は、名前を知る人が閲覧・投稿できます。ランダムな通知先を使い、メモ本文は通知しません。</p><button class="btn secondary">閉じる</button></form>';
     document.body.append(dialog);
-    dialog.querySelector('#notify-endpoint').value=settings.endpoint || '';
+    dialog.querySelector('#notify-endpoint').value=settings.endpoint || 'https://script.google.com/macros/s/AKfycbwEpf-pDj3dmplQCkWvYzIppkDwlf6BXI-aICNfdsMqnJ5-S-3w-nxwP8azj7IxGCI/exec';
     dialog.querySelector('#notify-token').value=settings.token || '';
     dialog.querySelector('#notify-connect').onclick=async()=>{
       const button=dialog.querySelector('#notify-connect'),status=dialog.querySelector('#notify-status');
