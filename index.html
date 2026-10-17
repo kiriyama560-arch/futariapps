@@ -773,15 +773,15 @@
         </div>
       </div>
 
-      <button id="btn-send-return" class="return-btn-card">
+      <button type="button" id="btn-send-return" class="return-btn-card">
         <div class="return-btn-content">
           <div class="return-btn-icon">🏠</div>
           <div class="return-btn-text">
-            <h3 id="return-button-label">今から帰るよ！</h3>
-            <p id="return-target-label">ちーちゃんにLINE通知を送る</p>
+            <h3 id="return-button-label">LINE通知画面を開く</h3>
+            <p id="return-target-label">移動先で相手を確認して送信してください</p>
           </div>
         </div>
-        <div class="send-icon-badge">送信 ✉️</div>
+        <div class="send-icon-badge">開く ↗</div>
       </button>
     </section>
 
@@ -1106,9 +1106,8 @@
       });
 
       document.getElementById("btn-send-return").addEventListener("click", () => {
-        const sender = config.deviceUser === "B" ? config.nameB : config.nameA;
-        const receiver = config.deviceUser === "B" ? config.nameA : config.nameB;
-        showToast(`📲「${sender}が今から帰るよ！」を${receiver}にLINE送信しました`);
+        // Open GAS on its own origin so its existing device authentication is used.
+        window.location.assign("https://script.google.com/macros/s/AKfycbx7152MPERowWA__KFX9qsR46vGARNWbNb5F7A3vYhk5kHyHy99usXo5jwowv9aZ-M/exec");
       });
     }
 
@@ -1141,7 +1140,6 @@
       const tag = document.getElementById("current-user-tag");
       const isUserA = config.deviceUser === "A";
       const myName = isUserA ? config.nameA : config.nameB;
-      const partnerName = isUserA ? config.nameB : config.nameA;
 
       tag.textContent = `${isUserA ? '👦' : '👧'} ${myName}端末`;
       tag.className = `user-badge ${isUserA ? 'user-a' : 'user-b'}`;
@@ -1151,8 +1149,8 @@
       document.getElementById("choice-name-a").textContent = config.nameA;
       document.getElementById("choice-name-b").textContent = config.nameB;
 
-      document.getElementById("return-button-label").textContent = `🏠 ${myName}が今から帰るよ！`;
-      document.getElementById("return-target-label").textContent = `${partnerName}にLINE通知を送る`;
+      document.getElementById("return-button-label").textContent = "LINE通知画面を開く";
+      document.getElementById("return-target-label").textContent = "移動先で相手を確認して送信してください";
     }
 
     function selectDeviceUser(user, close = true) {
