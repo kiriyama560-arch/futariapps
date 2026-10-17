@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ふたりの予定・メモ管理</title>
+  <title>ふたりノート</title>
 
   <!-- Firebase SDK (Compat CDN) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -62,21 +62,49 @@
       justify-content: space-between;
       align-items: center;
       padding: 8px 4px 4px;
+      flex-wrap: nowrap;
+      gap: 8px;
+      min-width: 0;
     }
 
     .app-title {
-      font-size: 1.15rem;
+      font-size: clamp(0.9rem, 4.5vw, 1.15rem);
       font-weight: 700;
       display: flex;
       align-items: center;
       gap: 6px;
       color: #0f172a;
+      white-space: nowrap;
+      flex-shrink: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .header-actions {
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .header-actions .sync-status span:last-child {
+      white-space: nowrap;
+    }
+    @media (max-width: 380px) {
+      .sync-status span:last-child {
+        display: none;
+      }
+      .user-badge {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+      }
+      .icon-btn {
+        width: 32px;
+        height: 32px;
+      }
     }
 
     .sync-status {
@@ -185,7 +213,9 @@
     .date-quick-actions {
       display: flex;
       justify-content: center;
-      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
       border-top: 1px dashed var(--border);
       padding-top: 10px;
     }
@@ -210,6 +240,123 @@
       color: var(--primary);
       border-color: #c7d2fe;
       background: var(--primary-light);
+    }
+    .pill-btn.active {
+      color: var(--primary);
+      border-color: #c7d2fe;
+      background: var(--primary-light);
+    }
+
+    .view-toggle {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* Week View */
+    .week-view {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .week-day-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      border-left: 5px solid #cbd5e1;
+      cursor: pointer;
+    }
+    .week-day-card.today {
+      border-left-color: var(--primary);
+    }
+    .week-day-card.is-sat {
+      border-left-color: var(--user-a);
+    }
+    .week-day-card.is-sun {
+      border-left-color: var(--danger);
+    }
+
+    .week-day-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .week-day-date {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .week-day-date .day-of-week {
+      margin-left: 4px;
+      font-size: 0.82rem;
+    }
+    .week-day-hint {
+      font-size: 0.7rem;
+      color: var(--text-sub);
+      white-space: nowrap;
+    }
+
+    .week-user-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 4px 0;
+    }
+    .week-user-name {
+      font-size: 0.78rem;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+      min-width: 64px;
+      max-width: 96px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .week-user-name.user-a { color: var(--user-a); }
+    .week-user-name.user-b { color: var(--user-b); }
+
+    .week-user-items {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+      min-width: 0;
+    }
+    .week-item-line {
+      font-size: 0.82rem;
+      color: var(--text);
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      min-width: 0;
+    }
+    .week-item-time {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #475569;
+      background: #e2e8f0;
+      padding: 1px 5px;
+      border-radius: 4px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .week-item-time.all-day {
+      background: #e0e7ff;
+      color: var(--primary);
+    }
+    .week-item-text {
+      word-break: break-word;
+      min-width: 0;
+    }
+    .week-empty {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      font-style: italic;
     }
 
     #hidden-date-picker {
@@ -469,6 +616,37 @@
       flex: 1;
     }
 
+    .memo-body {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .memo-reminder {
+      font-size: 0.74rem;
+      color: #92400e;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 4px 8px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+    .memo-reminder .remind-status {
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 9999px;
+      white-space: nowrap;
+    }
+    .remind-status.pending { background: #fef3c7; color: #b45309; }
+    .remind-status.sent { background: #d1fae5; color: #047857; }
+    .remind-status.failed { background: #fee2e2; color: #b91c1c; }
+    .remind-status.none { background: #e2e8f0; color: #475569; }
+
     /* Modals */
     .modal-overlay {
       position: fixed;
@@ -700,7 +878,7 @@
     <header>
       <div class="app-title">
         <span>🏠</span>
-        <span>ふたりの予定ノート</span>
+        <span>ふたりノート</span>
       </div>
       <div class="header-actions">
         <div class="sync-status" title="リアルタイム同期中">
@@ -724,6 +902,10 @@
       <div class="date-quick-actions">
         <button id="btn-today" class="pill-btn primary">今日へ戻る</button>
         <button id="btn-calendar" class="pill-btn">📅 カレンダー選択</button>
+        <div class="view-toggle">
+          <button id="btn-view-day" class="pill-btn active">1日</button>
+          <button id="btn-view-week" class="pill-btn">1週間</button>
+        </div>
         <input type="date" id="hidden-date-picker">
       </div>
     </section>
@@ -737,8 +919,8 @@
         </div>
       </div>
 
-      <div class="schedule-boxes">
-        <!-- User A Box -->
+      <div class="schedule-boxes" id="schedule-boxes">
+        <!-- ゆーくん Box -->
         <div class="schedule-box user-a">
           <div class="schedule-box-header">
             <div class="user-name-tag user-a">
@@ -750,7 +932,7 @@
           <div class="item-list" id="list-schedules-a"></div>
         </div>
 
-        <!-- User B Box -->
+        <!-- ちーちゃん Box -->
         <div class="schedule-box user-b">
           <div class="schedule-box-header">
             <div class="user-name-tag user-b">
@@ -762,6 +944,8 @@
           <div class="item-list" id="list-schedules-b"></div>
         </div>
       </div>
+
+      <div class="week-view" id="week-view" style="display:none;"></div>
     </section>
 
     <!-- 2. Return Home Section (Order: Middle) -->
@@ -777,11 +961,11 @@
         <div class="return-btn-content">
           <div class="return-btn-icon">🏠</div>
           <div class="return-btn-text">
-            <h3 id="return-button-label">LINE通知画面を開く</h3>
-            <p id="return-target-label">移動先で相手を確認して送信してください</p>
+            <h3 id="return-button-label">帰る通知を送る</h3>
+            <p id="return-target-label">相手だけに通知</p>
           </div>
         </div>
-        <div class="send-icon-badge">開く ↗</div>
+        <div class="send-icon-badge">送信 ↗</div>
       </button>
     </section>
 
@@ -863,6 +1047,11 @@
       </div>
 
       <div class="form-group">
+        <label class="form-label" for="schedule-end-time">終了時間（開始時間を指定した場合のみ）</label>
+        <input type="time" id="schedule-end-time" class="form-input">
+      </div>
+
+      <div class="form-group">
         <label class="form-label" for="schedule-title">予定の内容</label>
         <input type="text" id="schedule-title" class="form-input" placeholder="例: 同僚と夕食、ジム、テレワーク" required>
       </div>
@@ -886,6 +1075,25 @@
       <div class="form-group">
         <label class="form-label" for="memo-content">メモ内容（日付に関係なく残ります）</label>
         <textarea id="memo-content" class="form-textarea" placeholder="例: トイレットペーパー買う、今月の家賃振込（25日）"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="memo-remind-at">リマインド日時（任意）</label>
+        <input type="datetime-local" id="memo-remind-at" class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="memo-remind-target">リマインドの宛先</label>
+        <select id="memo-remind-target" class="form-select">
+          <option value="both" selected>二人とも</option>
+          <option value="A" id="remind-option-a">Aに通知</option>
+          <option value="B" id="remind-option-b">Bに通知</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="memo-reminder-status-group" style="display:none;">
+        <label class="form-label">リマインド状態</label>
+        <div id="memo-reminder-status" style="font-size:0.85rem; color: var(--text-sub);"></div>
       </div>
 
       <div class="modal-buttons">
@@ -925,6 +1133,14 @@
       <div class="form-group" style="margin-top: 8px;">
         <label class="form-label" for="input-name-b">Bの名前（ニックネーム）</label>
         <input type="text" id="input-name-b" class="form-input" value="ちーちゃん">
+      </div>
+
+      <div class="form-group" style="margin-top: 8px;">
+        <label class="form-label">通知</label>
+        <button type="button" id="btn-notification-settings" class="btn secondary" style="width:100%;">
+          <span>🔔</span>
+          <span>通知設定</span>
+        </button>
       </div>
 
       <div class="modal-buttons">
@@ -967,6 +1183,7 @@
     const STORAGE_KEY_CONFIG = "pair_planner_config_v1";
 
     let currentDate = new Date();
+    let viewMode = "day";
     let config = {
       deviceUser: "A",
       nameA: "ゆーくん",
@@ -988,6 +1205,7 @@
         openModal("modal-user-select");
       }
       updateUserUI();
+      updateViewToggleUI();
 
       renderDateView();
       setupEventListeners();
@@ -1063,12 +1281,12 @@
     // --- Event Listeners ---
     function setupEventListeners() {
       document.getElementById("btn-prev-day").addEventListener("click", () => {
-        currentDate.setDate(currentDate.getDate() - 1);
+        currentDate.setDate(currentDate.getDate() - (viewMode === "week" ? 7 : 1));
         renderDateView();
         renderSchedules();
       });
       document.getElementById("btn-next-day").addEventListener("click", () => {
-        currentDate.setDate(currentDate.getDate() + 1);
+        currentDate.setDate(currentDate.getDate() + (viewMode === "week" ? 7 : 1));
         renderDateView();
         renderSchedules();
       });
@@ -1105,10 +1323,57 @@
         openModal("modal-settings");
       });
 
-      document.getElementById("btn-send-return").addEventListener("click", () => {
-        // Open GAS on its own origin so its existing device authentication is used.
-        window.location.assign("https://script.google.com/macros/s/AKfycbx7152MPERowWA__KFX9qsR46vGARNWbNb5F7A3vYhk5kHyHy99usXo5jwowv9aZ-M/exec");
+      document.getElementById("btn-view-day").addEventListener("click", () => {
+        if (viewMode === "day") return;
+        viewMode = "day";
+        updateViewToggleUI();
+        renderDateView();
+        renderSchedules();
       });
+      document.getElementById("btn-view-week").addEventListener("click", () => {
+        if (viewMode === "week") return;
+        viewMode = "week";
+        updateViewToggleUI();
+        renderDateView();
+        renderSchedules();
+      });
+
+      document.getElementById("btn-notification-settings").addEventListener("click", () => {
+        if (window.PairNotify && typeof window.PairNotify.openSettings === "function") {
+          try {
+            window.PairNotify.openSettings();
+          } catch (err) {
+            showToast("通知設定を開けませんでした: " + err.message);
+          }
+          return;
+        }
+        showToast("⚠️ この端末では通知機能が設定されていません");
+        alert("通知機能がこの端末に設定されていません。アプリの通知連携を設定してから再度お試しください。");
+      });
+
+      document.getElementById("btn-send-return").addEventListener("click", async () => {
+        await sendReturning();
+      });
+    }
+
+    function updateViewToggleUI() {
+      document.getElementById("btn-view-day").classList.toggle("active", viewMode === "day");
+      document.getElementById("btn-view-week").classList.toggle("active", viewMode === "week");
+    }
+
+    async function sendReturning() {
+      if (!window.PairNotify || typeof window.PairNotify.sendReturning !== "function") {
+        showToast("⚠️ 通知機能が未設定です");
+        alert("この端末では帰る通知を送信できません（通知連携が未設定です）。アプリの通知設定を構成してください。");
+        return;
+      }
+      try {
+        await window.PairNotify.sendReturning();
+        showToast("帰る通知を送信しました");
+      } catch (err) {
+        console.error("sendReturning error:", err);
+        showToast("通知の送信に失敗しました: " + (err && err.message ? err.message : err));
+      }
     }
 
     function formatDateISO(d) {
@@ -1119,6 +1384,22 @@
     }
 
     function renderDateView() {
+      const dateLabel = document.getElementById("date-label");
+      const schedulesHeading = document.getElementById("schedules-heading-date");
+
+      if (viewMode === "week") {
+        const start = new Date(currentDate);
+        const end = new Date(currentDate);
+        end.setDate(end.getDate() + 6);
+        const sM = start.getMonth() + 1, sD = start.getDate();
+        const eM = end.getMonth() + 1, eD = end.getDate();
+        const sName = dayNames[start.getDay()];
+        const eName = dayNames[end.getDay()];
+        dateLabel.innerHTML = `${start.getFullYear()}年 ${sM}月${sD}日〜 ${eM}月${eD}日`;
+        schedulesHeading.innerHTML = `${sM}月${sD}日(${sName})〜${eM}月${eD}日(${eName}) の予定`;
+        return;
+      }
+
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1;
       const day = currentDate.getDate();
@@ -1129,14 +1410,13 @@
       if (dayOfWeekIdx === 0) dayClass = "day-sun";
       if (dayOfWeekIdx === 6) dayClass = "day-sat";
 
-      const dateLabel = document.getElementById("date-label");
       dateLabel.innerHTML = `${year}年 ${month}月${day}日 <span class="day-of-week ${dayClass}">(${dayName})</span>`;
-
-      const schedulesHeading = document.getElementById("schedules-heading-date");
       schedulesHeading.innerHTML = `${month}月${day}日(${dayName}) の予定`;
     }
 
     function updateUserUI() {
+      document.getElementById("remind-option-a").textContent = config.nameA + "に通知";
+      document.getElementById("remind-option-b").textContent = config.nameB + "に通知";
       const tag = document.getElementById("current-user-tag");
       const isUserA = config.deviceUser === "A";
       const myName = isUserA ? config.nameA : config.nameB;
@@ -1149,8 +1429,8 @@
       document.getElementById("choice-name-a").textContent = config.nameA;
       document.getElementById("choice-name-b").textContent = config.nameB;
 
-      document.getElementById("return-button-label").textContent = "LINE通知画面を開く";
-      document.getElementById("return-target-label").textContent = "移動先で相手を確認して送信してください";
+      document.getElementById("return-button-label").textContent = "帰る通知を送る";
+      document.getElementById("return-target-label").textContent = "相手だけに通知";
     }
 
     function selectDeviceUser(user, close = true) {
@@ -1186,6 +1466,19 @@
 
     // --- Schedules Rendering & CRUD ---
     function renderSchedules() {
+      const boxes = document.getElementById("schedule-boxes");
+      const week = document.getElementById("week-view");
+
+      if (viewMode === "week") {
+        boxes.style.display = "none";
+        week.style.display = "flex";
+        renderWeekView();
+        return;
+      }
+
+      boxes.style.display = "flex";
+      week.style.display = "none";
+
       const dateStr = formatDateISO(currentDate);
       const filtered = schedules.filter(s => s.date === dateStr);
 
@@ -1197,6 +1490,83 @@
 
       listA.innerHTML = renderScheduleListHtml(itemsA);
       listB.innerHTML = renderScheduleListHtml(itemsB);
+    }
+
+    function renderWeekView() {
+      const week = document.getElementById("week-view");
+      const todayStr = formatDateISO(new Date());
+      const cards = [];
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(currentDate);
+        d.setDate(d.getDate() + i);
+        const dateStr = formatDateISO(d);
+        const dow = d.getDay();
+        const dowName = dayNames[dow];
+
+        const dayItems = schedules.filter(s => s.date === dateStr);
+        const itemsA = dayItems.filter(s => s.user === "A").sort(sortScheduleTimes);
+        const itemsB = dayItems.filter(s => s.user === "B").sort(sortScheduleTimes);
+
+        let cls = "week-day-card";
+        if (dateStr === todayStr) cls += " today";
+        if (dow === 6) cls += " is-sat";
+        if (dow === 0) cls += " is-sun";
+
+        let dowClass = "";
+        if (dow === 6) dowClass = "day-sat";
+        if (dow === 0) dowClass = "day-sun";
+
+        const nameA = escapeHtml(config.nameA);
+        const nameB = escapeHtml(config.nameB);
+
+        cards.push(`
+          <div class="${cls}" onclick="selectDay('${dateStr}')">
+            <div class="week-day-header">
+              <div class="week-day-date">${d.getMonth() + 1}月${d.getDate()}日<span class="day-of-week ${dowClass}">(${dowName})</span></div>
+              <div class="week-day-hint">タップで1日表示</div>
+            </div>
+            <div class="week-user-row">
+              <div class="week-user-name user-a">👦 ${nameA}</div>
+              <div class="week-user-items">${renderWeekItemsHtml(itemsA)}</div>
+            </div>
+            <div class="week-user-row">
+              <div class="week-user-name user-b">👧 ${nameB}</div>
+              <div class="week-user-items">${renderWeekItemsHtml(itemsB)}</div>
+            </div>
+          </div>
+        `);
+      }
+
+      week.innerHTML = cards.join("");
+    }
+
+    function renderWeekItemsHtml(items) {
+      if (items.length === 0) {
+        return `<span class="week-empty">予定なし</span>`;
+      }
+      return items.map(item => {
+        const timeLabel = item.time ? formatTimeRange(item) : "終日";
+        return `<div class="week-item-line">
+          <span class="week-item-time ${item.time ? '' : 'all-day'}">${escapeHtml(timeLabel)}</span>
+          <span class="week-item-text">${escapeHtml(item.title || "")}</span>
+        </div>`;
+      }).join("");
+    }
+
+    function selectDay(dateStr) {
+      const parts = dateStr.split("-");
+      currentDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      viewMode = "day";
+      updateViewToggleUI();
+      renderDateView();
+      renderSchedules();
+    }
+
+    function formatTimeRange(item) {
+      if (!item.time) return "終日";
+      if (item.endTime) return `${item.time}〜${item.endTime}`;
+      return item.time;
     }
 
     function sortScheduleTimes(a, b) {
@@ -1213,7 +1583,7 @@
       return items.map(item => `
         <div class="schedule-item">
           <div class="item-content">
-            <span class="item-time ${item.time ? '' : 'all-day'}">${item.time ? item.time : '終日'}</span>
+            <span class="item-time ${item.time ? '' : 'all-day'}">${escapeHtml(formatTimeRange(item))}</span>
             <span class="item-text">${escapeHtml(item.title)}</span>
           </div>
           <div class="item-actions">
@@ -1230,11 +1600,12 @@
       document.getElementById("schedule-user").value = user;
       document.getElementById("select-time-hour").value = "";
       document.getElementById("select-time-minute").value = "00";
+      document.getElementById("schedule-end-time").value = "";
       document.getElementById("schedule-title").value = "";
 
       const name = user === "A" ? config.nameA : config.nameB;
       const icon = user === "A" ? "👦" : "👧";
-      document.getElementById("schedule-target-user-display").innerHTML = `${icon} ${name} の予定`;
+      document.getElementById("schedule-target-user-display").innerHTML = `${icon} ${escapeHtml(name)} の予定`;
 
       openModal("modal-schedule");
     }
@@ -1249,28 +1620,48 @@
 
       if (item.time && item.time.includes(":")) {
         const parts = item.time.split(":");
-        document.getElementById("select-time-hour").value = parts[0];
-        document.getElementById("select-time-minute").value = parts[1];
+        setTimeSelectValue("select-time-hour", parts[0]);
+        setTimeSelectValue("select-time-minute", parts[1]);
       } else {
         document.getElementById("select-time-hour").value = "";
         document.getElementById("select-time-minute").value = "00";
       }
 
+      document.getElementById("schedule-end-time").value = item.endTime || "";
       document.getElementById("schedule-title").value = item.title;
 
       const name = item.user === "A" ? config.nameA : config.nameB;
       const icon = item.user === "A" ? "👦" : "👧";
-      document.getElementById("schedule-target-user-display").innerHTML = `${icon} ${name} の予定`;
+      document.getElementById("schedule-target-user-display").innerHTML = `${icon} ${escapeHtml(name)} の予定`;
 
       openModal("modal-schedule");
     }
 
+    function setTimeSelectValue(selectId, value) {
+      const sel = document.getElementById(selectId);
+      if (!sel) return;
+      let exists = Array.from(sel.options).some(o => o.value === value);
+      if (!exists && value !== "") {
+        const opt = document.createElement("option");
+        opt.value = value;
+        opt.textContent = `${value} 分`;
+        sel.appendChild(opt);
+      }
+      sel.value = value;
+    }
+
+    let scheduleSaving = false;
     async function saveSchedule() {
+      if(scheduleSaving)return; scheduleSaving=true;
+      try { return await saveScheduleOnce(); } finally {scheduleSaving=false;}
+    }
+    async function saveScheduleOnce() {
       const id = document.getElementById("schedule-id").value;
       const user = document.getElementById("schedule-user").value;
       const hour = document.getElementById("select-time-hour").value;
       const minute = document.getElementById("select-time-minute").value;
       const time = hour ? `${hour}:${minute}` : "";
+      const endTime = document.getElementById("schedule-end-time").value;
       const title = document.getElementById("schedule-title").value.trim();
       const dateStr = formatDateISO(currentDate);
 
@@ -1279,10 +1670,22 @@
         return;
       }
 
+      if (endTime) {
+        if (!time) {
+          alert("終了時間を指定するには開始時間を指定してください");
+          return;
+        }
+        if (endTime <= time) {
+          alert("終了時間は開始時間より後にしてください");
+          return;
+        }
+      }
+
       const scheduleData = {
         date: dateStr,
         user: user,
         time: time,
+        endTime: endTime,
         title: title,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
@@ -1314,27 +1717,76 @@
     }
 
     // --- Memos Rendering & CRUD ---
+    const REMINDER_STATUS_LABELS = {
+      pending: "予約済み",
+      scheduled: "予約済み（配信未確認）",
+      sent: "配信状況不明",
+      failed: "失敗",
+      none: "未設定"
+    };
+
+    function reminderStatusLabel(status) {
+      return REMINDER_STATUS_LABELS[status] || REMINDER_STATUS_LABELS.none;
+    }
+
+    function reminderTargetLabel(target) {
+      if (target === "A") return config.nameA + "に通知";
+      if (target === "B") return config.nameB + "に通知";
+      return "二人とも";
+    }
+
+    function formatDateTimeJP(iso) {
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return "";
+      const pad = n => String(n).padStart(2, "0");
+      return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function toDateTimeLocalValue(iso) {
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return "";
+      const pad = n => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
     function renderMemos() {
       const list = document.getElementById("list-memos");
       if (memos.length === 0) {
         list.innerHTML = `<div class="empty-state">メモはありません</div>`;
         return;
       }
-      list.innerHTML = memos.map(m => `
+      list.innerHTML = memos.map(m => {
+        const status = m.reminderStatus || (m.remindAt ? "pending" : "none");
+        let reminderHtml = "";
+        if (m.remindAt) {
+          reminderHtml = `
+            <div class="memo-reminder">
+              <span>🔔 ${escapeHtml(formatDateTimeJP(m.remindAt))}</span>
+              <span>${escapeHtml(reminderTargetLabel(m.remindTarget))}</span>
+              <span class="remind-status ${escapeHtml(status)}">${escapeHtml(reminderStatusLabel(status))}</span>
+            </div>`;
+        }
+        return `
         <div class="memo-item">
-          <div class="memo-text">${escapeHtml(m.content)}</div>
+          <div class="memo-body">
+            <div class="memo-text">${escapeHtml(m.content)}</div>
+            ${reminderHtml}
+          </div>
           <div class="item-actions">
             <button class="action-icon-btn" title="編集" onclick="editMemo('${m.id}')">✏️</button>
             <button class="action-icon-btn delete" title="削除" onclick="deleteMemo('${m.id}')">🗑️</button>
           </div>
-        </div>
-      `).join("");
+        </div>`;
+      }).join("");
     }
 
     function openMemoModal() {
       document.getElementById("memo-modal-title").textContent = "共有メモの追加";
       document.getElementById("memo-id").value = "";
       document.getElementById("memo-content").value = "";
+      document.getElementById("memo-remind-at").value = "";
+      document.getElementById("memo-remind-target").value = "both";
+      updateMemoReminderStatusUI(null);
       openModal("modal-memo");
     }
 
@@ -1343,41 +1795,103 @@
       if (!memo) return;
       document.getElementById("memo-modal-title").textContent = "共有メモの編集";
       document.getElementById("memo-id").value = memo.id;
-      document.getElementById("memo-content").value = memo.content;
+      document.getElementById("memo-content").value = memo.content || "";
+      document.getElementById("memo-remind-at").value = memo.remindAt ? toDateTimeLocalValue(memo.remindAt) : "";
+      document.getElementById("memo-remind-target").value = memo.remindTarget || "both";
+      updateMemoReminderStatusUI(memo);
       openModal("modal-memo");
     }
 
-    async function saveMemo() {
-      const id = document.getElementById("memo-id").value;
-      const content = document.getElementById("memo-content").value.trim();
-
-      if (!content) {
-        alert("メモ内容を入力してください");
+    function updateMemoReminderStatusUI(memo) {
+      const group = document.getElementById("memo-reminder-status-group");
+      const el = document.getElementById("memo-reminder-status");
+      if (!memo || (!memo.remindAt && memo.reminderStatus !== "failed")) {
+        group.style.display = "none";
+        el.textContent = "";
         return;
       }
+      const status = memo.reminderStatus || (memo.remindAt ? "pending" : "none");
+      const dateText = memo.remindAt ? formatDateTimeJP(memo.remindAt) : "—";
+      el.textContent = `${dateText} / ${reminderStatusLabel(status)}`;
+      group.style.display = "block";
+    }
 
-      const memoData = {
-        content: content,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    function getPairNotifyHooks() {
+      const pn = window.PairNotify || {};
+      return {
+        saveReminder: typeof pn.saveReminder === "function" ? pn.saveReminder.bind(pn) : null,
+        cancelReminder: typeof pn.cancelReminder === "function" ? pn.cancelReminder.bind(pn) : null
       };
+    }
 
+    let memoSaving = false;
+    async function saveMemo() {
+      if (memoSaving) return;
+      memoSaving = true;
+      const buttons = document.querySelectorAll('#modal-memo button');
+      buttons.forEach(b => b.disabled = true);
+      let cancelled = false, persisted = false, ref;
       try {
-        if (id) {
-          await db.collection("memos").doc(id).update(memoData);
-        } else {
-          memoData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-          await db.collection("memos").add(memoData);
+        const id = document.getElementById('memo-id').value;
+        const content = document.getElementById('memo-content').value.trim();
+        const raw = document.getElementById('memo-remind-at').value;
+        const date = raw ? new Date(raw) : null;
+        if (!content) throw Error('メモ内容を入力してください。');
+        if (date && !Number.isFinite(date.getTime())) throw Error('通知日時を確認してください。');
+        const remindAt = date ? date.toISOString() : '';
+        const remindTarget = document.getElementById('memo-remind-target').value || 'both';
+        const old = id ? memos.find(m => m.id === id) : null;
+        const changed = !old || (old.remindAt || '') !== remindAt || (old.remindTarget || 'both') !== remindTarget;
+        const retry = !!remindAt && (!old || old.reminderStatus !== 'scheduled');
+        const needsSchedule = !!remindAt && (changed || retry);
+        if (needsSchedule && (date.getTime() <= Date.now() || date.getTime() > Date.now() + 366*86400000)) throw Error('通知日時は未来の1年以内で指定してください。');
+        const hooks = getPairNotifyHooks();
+        ref = id ? db.collection('memos').doc(id) : db.collection('memos').doc();
+        if (old && old.remindAt && (changed || retry)) {
+          if (!hooks.cancelReminder) throw Error('通知設定が必要です。既存の予約を解除できません。');
+          await hooks.cancelReminder(ref.id); cancelled = true;
         }
-        closeModal("modal-memo");
-        showToast("メモを保存しました");
-      } catch (err) {
-        console.error("Firestore memo save error:", err);
-        alert("保存中にエラーが発生しました: " + err.message);
+        const data = {content,remindAt,remindTarget,reminderStatus:!remindAt?'none':needsSchedule?'pending':'scheduled',updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+        if (!id) data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+        if(id) await ref.update(data); else await ref.set(data);
+        persisted = true;
+        document.getElementById('memo-id').value = ref.id;
+        if(needsSchedule) {
+          if(!hooks.saveReminder) throw Error('通知設定が必要です。メモは保存しましたが、通知は未予約です。');
+          await hooks.saveReminder(ref.id, {remindAt,remindTarget});
+          await ref.update({reminderStatus:'scheduled'});
+        }
+        closeModal('modal-memo');
+        showToast(needsSchedule?'メモを保存し、通知を予約しました':'メモを保存しました');
+      } catch(error) {
+        if(ref && (persisted || cancelled)) {try{await ref.update({reminderStatus:'failed'});}catch(_) {}}
+        const prefix = persisted ? 'メモは保存済みです。通知の状態を確認してください。' : cancelled ? '元の通知は解除済みですが、保存に失敗しました。再予約してください。' : '';
+        alert(prefix + error.message);
+      } finally {
+        memoSaving = false;buttons.forEach(b => b.disabled = false);
       }
     }
 
+
     async function deleteMemo(id) {
       if (!confirm("このメモを削除しますか？")) return;
+      const memo = memos.find(m => m.id === id);
+
+      if (memo && memo.remindAt) {
+        const hooks = getPairNotifyHooks();
+        if (!hooks.cancelReminder) {
+          alert("この端末では通知機能が未設定のため、リマインダーを解除できません。削除を中止しました。");
+          return;
+        }
+        try {
+          await hooks.cancelReminder(id);
+        } catch (err) {
+          console.error("cancelReminder error:", err);
+          alert("リマインダーの解除に失敗したため削除できません: " + (err && err.message ? err.message : err));
+          return;
+        }
+      }
+
       try {
         await db.collection("memos").doc(id).delete();
         showToast("メモを削除しました");
@@ -1408,12 +1922,13 @@
     }
 
     function escapeHtml(str) {
-      return str.replace(/[&<>'"]/g, 
+      return String(str ?? "").replace(/[&<>'"]/g,
         tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
       );
     }
 
     window.addEventListener("DOMContentLoaded", init);
   </script>
+  <script src="notifications.js"></script>
 </body>
 </html>

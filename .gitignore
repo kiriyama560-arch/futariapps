@@ -1,0 +1,4 @@
+node_modules/
+device-registration.json
+private*/
+*.log

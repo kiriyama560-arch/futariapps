@@ -1,0 +1,13 @@
+<!doctype html><meta charset="utf-8"><script>
+const channel = <?!= JSON.stringify(channel) ?>;
+const allowedOrigin = <?!= JSON.stringify(origin) ?>;
+window.addEventListener('message', event => {
+  const data = event.data;
+  if (event.source !== window.top || event.origin !== allowedOrigin || !data || data.channel !== channel || data.type !== 'pair-request') return;
+  const reply = result => window.top.postMessage({type:'pair-response',channel,id:data.id,...result}, allowedOrigin);
+  google.script.run.withSuccessHandler(value => reply({ok:true,value}))
+    .withFailureHandler(error => reply({ok:false,error:error.message || '通知接続に失敗しました。'}))
+    .notificationRequest(data.request);
+});
+window.top.postMessage({type:'pair-ready',channel}, allowedOrigin);
+</script>
