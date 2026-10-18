@@ -746,30 +746,6 @@
       color: var(--text-sub);
     }
 
-    .quick-time-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 4px;
-    }
-    .time-chip {
-      background: #f1f5f9;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 4px 10px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #475569;
-      cursor: pointer;
-    }
-    .time-chip:active {
-      background: #e2e8f0;
-    }
-    .time-chip.clear {
-      background: #fee2e2;
-      color: #b91c1c;
-      border-color: #fecaca;
-    }
 
     .modal-buttons {
       display: flex;
@@ -950,12 +926,6 @@
 
     <!-- 2. Return Home Section (Order: Middle) -->
     <section class="return-home-section">
-      <div class="section-title-row">
-        <div class="section-title">
-          <span>🏃‍♂️</span>
-          <span>今から帰るよ</span>
-        </div>
-      </div>
 
       <button type="button" id="btn-send-return" class="return-btn-card">
         <div class="return-btn-content">
@@ -1035,14 +1005,6 @@
             <option value="50">50 分</option>
             <option value="55">55 分</option>
           </select>
-        </div>
-        <div class="quick-time-chips">
-          <button type="button" class="time-chip" onclick="setQuickTime('09','00')">朝 9:00</button>
-          <button type="button" class="time-chip" onclick="setQuickTime('12','00')">昼 12:00</button>
-          <button type="button" class="time-chip" onclick="setQuickTime('18','00')">夕 18:00</button>
-          <button type="button" class="time-chip" onclick="setQuickTime('19','30')">夜 19:30</button>
-          <button type="button" class="time-chip" onclick="setQuickTime('21','00')">夜 21:00</button>
-          <button type="button" class="time-chip clear" onclick="setQuickTime('','')">終日に戻す</button>
         </div>
       </div>
 
@@ -1256,12 +1218,6 @@
       }
     }
 
-    function setQuickTime(hour, minute) {
-      document.getElementById("select-time-hour").value = hour;
-      if (hour) {
-        document.getElementById("select-time-minute").value = minute || "00";
-      }
-    }
 
     function loadLocalConfig() {
       try {
