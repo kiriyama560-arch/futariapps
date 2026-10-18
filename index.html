@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ふたりノート</title>
 
+  <script>
+    try { document.documentElement.dataset.theme = localStorage.getItem('pair_theme_v1') === 'dark' ? 'dark' : 'light'; } catch (_) {}
+  </script>
   <!-- Firebase SDK (Compat CDN) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -29,6 +32,21 @@
       --radius: 16px;
       --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
     }
+    :root { color-scheme: light; --surface: #f1f5f9; --memo-bg: #fdfbf7; --memo-border: #fef3c7; --memo-text: #92400e; }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #111318; --card-bg: #1e222a; --surface: #292f39;
+      --text: #eef2f7; --text-sub: #b0bdce; --border: #414b5b;
+      --primary: #a5b4fc; --primary-light: #30365a;
+      --user-a: #93c5fd; --user-a-bg: #1e324a; --user-a-border: #3b6087;
+      --user-b: #f9a8d4; --user-b-bg: #402638; --user-b-border: #80516c;
+      --memo-bg: #302c21; --memo-border: #665635; --memo-text: #fcd68a;
+    }
+    :root[data-theme="dark"] .btn.primary { background: #4f46e5; }
+    :root[data-theme="dark"] .day-sat { color: #93c5fd; }
+    :root[data-theme="dark"] .day-sun { color: #fca5a5; }
+    #notification-dialog { background: var(--card-bg); color: var(--text) !important; border-color: var(--border) !important; }
+
 
     * {
       box-sizing: border-box;
@@ -73,7 +91,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      color: #0f172a;
+      color: var(--text);
       white-space: nowrap;
       flex-shrink: 1;
       min-width: 0;
@@ -148,7 +166,7 @@
     }
 
     .icon-btn {
-      background: #ffffff;
+      background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 10px;
       width: 36px;
@@ -180,7 +198,7 @@
     }
 
     .nav-arrow-btn {
-      background: #f1f5f9;
+      background: var(--surface);
       border: none;
       width: 38px;
       height: 38px;
@@ -194,7 +212,7 @@
       cursor: pointer;
     }
     .nav-arrow-btn:active {
-      background: #e2e8f0;
+      background: var(--border);
     }
 
     .current-date-display {
@@ -221,7 +239,7 @@
     }
 
     .pill-btn {
-      background: #f8fafc;
+      background: var(--bg);
       border: 1px solid var(--border);
       padding: 6px 14px;
       border-radius: 9999px;
@@ -234,7 +252,7 @@
       cursor: pointer;
     }
     .pill-btn:active {
-      background: #f1f5f9;
+      background: var(--surface);
     }
     .pill-btn.primary {
       color: var(--primary);
@@ -265,7 +283,7 @@
       padding: 12px 14px;
       box-shadow: var(--shadow);
       border: 1px solid var(--border);
-      border-left: 5px solid #cbd5e1;
+      border-left: 5px solid var(--border);
       cursor: pointer;
     }
     .week-day-card.today {
@@ -284,12 +302,12 @@
       align-items: baseline;
       margin-bottom: 8px;
       padding-bottom: 6px;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--surface);
     }
     .week-day-date {
       font-size: 0.92rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--text);
     }
     .week-day-date .day-of-week {
       margin-left: 4px;
@@ -338,15 +356,15 @@
     .week-item-time {
       font-size: 0.72rem;
       font-weight: 700;
-      color: #475569;
-      background: #e2e8f0;
+      color: var(--text-sub);
+      background: var(--border);
       padding: 1px 5px;
       border-radius: 4px;
       white-space: nowrap;
       flex-shrink: 0;
     }
     .week-item-time.all-day {
-      background: #e0e7ff;
+      background: var(--primary-light);
       color: var(--primary);
     }
     .week-item-text {
@@ -380,7 +398,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      color: #334155;
+      color: var(--text);
     }
 
     /* Schedules Section */
@@ -396,7 +414,7 @@
       padding: 14px 16px;
       box-shadow: var(--shadow);
       border: 1px solid var(--border);
-      border-left: 5px solid #cbd5e1;
+      border-left: 5px solid var(--border);
     }
     .schedule-box.user-a {
       border-left-color: var(--user-a);
@@ -411,7 +429,7 @@
       align-items: center;
       margin-bottom: 12px;
       padding-bottom: 8px;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--surface);
     }
 
     .user-name-tag {
@@ -425,7 +443,7 @@
     .user-name-tag.user-b { color: var(--user-b); }
 
     .add-btn-small {
-      background: #f8fafc;
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 4px 10px;
@@ -438,7 +456,7 @@
       color: var(--text);
     }
     .add-btn-small:active {
-      background: #f1f5f9;
+      background: var(--surface);
     }
 
     .item-list {
@@ -459,8 +477,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: #f8fafc;
-      border: 1px solid #f1f5f9;
+      background: var(--bg);
+      border: 1px solid var(--surface);
       border-radius: 10px;
       padding: 9px 12px;
       gap: 10px;
@@ -477,14 +495,14 @@
     .item-time {
       font-size: 0.8rem;
       font-weight: 700;
-      color: #475569;
-      background: #e2e8f0;
+      color: var(--text-sub);
+      background: var(--border);
       padding: 2px 6px;
       border-radius: 5px;
       white-space: nowrap;
     }
     .item-time.all-day {
-      background: #e0e7ff;
+      background: var(--primary-light);
       color: var(--primary);
     }
 
@@ -515,7 +533,7 @@
       font-size: 0.95rem;
     }
     .action-icon-btn:hover {
-      background: #e2e8f0;
+      background: var(--border);
     }
     .action-icon-btn.delete:hover {
       background: #fee2e2;
@@ -595,8 +613,8 @@
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      background: #fdfbf7;
-      border: 1px solid #fef3c7;
+      background: var(--memo-bg);
+      border: 1px solid var(--memo-border);
       border-left: 4px solid #f59e0b;
       border-radius: 10px;
       padding: 10px 12px;
@@ -610,7 +628,7 @@
     .memo-text {
       font-size: 0.88rem;
       line-height: 1.45;
-      color: #334155;
+      color: var(--text);
       white-space: pre-wrap;
       word-break: break-word;
       flex: 1;
@@ -626,9 +644,9 @@
 
     .memo-reminder {
       font-size: 0.74rem;
-      color: #92400e;
-      background: #fffbeb;
-      border: 1px solid #fde68a;
+      color: var(--memo-text);
+      background: var(--memo-bg);
+      border: 1px solid var(--memo-border);
       border-radius: 8px;
       padding: 4px 8px;
       display: flex;
@@ -642,10 +660,10 @@
       border-radius: 9999px;
       white-space: nowrap;
     }
-    .remind-status.pending { background: #fef3c7; color: #b45309; }
+    .remind-status.pending { background: var(--memo-border); color: #b45309; }
     .remind-status.sent { background: #d1fae5; color: #047857; }
     .remind-status.failed { background: #fee2e2; color: #b91c1c; }
-    .remind-status.none { background: #e2e8f0; color: #475569; }
+    .remind-status.none { background: var(--border); color: var(--text-sub); }
 
     /* Modals */
     .modal-overlay {
@@ -669,7 +687,7 @@
     }
 
     .modal-card {
-      background: #ffffff;
+      background: var(--card-bg);
       border-radius: 20px;
       width: 100%;
       max-width: 400px;
@@ -690,7 +708,7 @@
     .modal-title {
       font-size: 1.1rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--text);
     }
 
     .form-group {
@@ -709,11 +727,11 @@
       padding: 10px 12px;
       font-size: 0.95rem;
       outline: none;
-      background: #f8fafc;
+      background: var(--bg);
     }
     .form-input:focus, .form-textarea:focus, .form-select:focus {
       border-color: var(--primary);
-      background: #ffffff;
+      background: var(--card-bg);
     }
     .form-textarea {
       min-height: 80px;
@@ -733,13 +751,13 @@
       font-weight: 600;
       border-radius: 10px;
       border: 1px solid var(--border);
-      background: #f8fafc;
+      background: var(--bg);
       color: var(--text);
       outline: none;
     }
     .time-select:focus {
       border-color: var(--primary);
-      background: #ffffff;
+      background: var(--card-bg);
     }
     .time-separator {
       font-weight: 700;
@@ -753,7 +771,7 @@
       gap: 10px;
       margin-top: 10px;
       padding-top: 10px;
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid var(--surface);
     }
 
     .btn {
@@ -769,11 +787,11 @@
       gap: 6px;
     }
     .btn.secondary {
-      background: #f1f5f9;
+      background: var(--surface);
       color: var(--text-sub);
     }
     .btn.secondary:active {
-      background: #e2e8f0;
+      background: var(--border);
     }
     .btn.primary {
       background: var(--primary);
@@ -792,7 +810,7 @@
       margin-top: 8px;
     }
     .user-choice-btn {
-      background: #f8fafc;
+      background: var(--bg);
       border: 2px solid var(--border);
       border-radius: 14px;
       padding: 18px 10px;
@@ -1071,6 +1089,13 @@
   <div class="modal-overlay" id="modal-settings">
     <div class="modal-card">
       <div class="modal-title">⚙️ アプリ設定</div>
+      <div class="form-group">
+        <label class="form-label" for="theme-select">画面の明るさ</label>
+        <select id="theme-select" class="form-input" onchange="setTheme(this.value)">
+          <option value="light">ライトモード</option>
+          <option value="dark">ダークモード</option>
+        </select>
+      </div>
 
       <div class="form-group">
         <label class="form-label">このスマホの利用者</label>
@@ -1274,6 +1299,7 @@
       document.getElementById("btn-open-settings").addEventListener("click", () => {
         document.getElementById("input-name-a").value = config.nameA;
         document.getElementById("input-name-b").value = config.nameB;
+        document.getElementById("theme-select").value = document.documentElement.dataset.theme || "light";
         updateSettingsActiveState();
         openModal("modal-settings");
       });
@@ -1404,6 +1430,13 @@
       const btnB = document.getElementById("setting-choice-b");
       btnA.classList.toggle("active", config.deviceUser === "A");
       btnB.classList.toggle("active", config.deviceUser === "B");
+    }
+
+    function setTheme(value) {
+      const theme = value === 'dark' ? 'dark' : 'light';
+      document.documentElement.dataset.theme = theme;
+      try { localStorage.setItem('pair_theme_v1', theme); }
+      catch (_) { showToast('表示を変更しましたが、端末に保存できませんでした'); }
     }
 
     function saveSettings() {
